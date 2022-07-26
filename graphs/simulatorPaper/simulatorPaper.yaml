@@ -1,0 +1,100 @@
+
+metadata:
+    participant_id: 0
+    graph_name:                simulatorPaper
+    session_description:        "Test neural data simulation"
+
+# ----------------------------------------------------- 
+
+# node-specific parameters
+nodes:
+  - name:             mouseAdapter
+    nickname:         mouseAdapterSim
+    module:           ../brand-modules/brand-simulator
+    run_priority:     99
+    redis_inputs:     []
+    redis_outputs:    [mouse_vel]
+    parameters:
+        # Logging level for the process
+        log: INFO
+        # Number of samples we're expecting to see per Redis stream entry
+        samples_per_redis_stream: 1
+        # Sample rate in Hz
+        sample_rate: 200
+        # Mouse device ID
+#            mouse_device: /dev/input/by-id/usb-Logitech_Gaming_Mouse_G502_0D7534623937-event-mouse
+#            mouse_device: /dev/input/by-id/usb-Logitech_USB_Optical_Mouse-event-mouse
+#            mouse_device: /dev/input/by-id/usb-PixArt_Dell_MS116_USB_Optical_Mouse-event-mouse
+#            mouse_device: /dev/input/by-id/usb-PixArt_USB_Optical_Mouse-event-mouse
+        mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
+        # Max number of samples to store in Redis
+        max_samples: 100000
+
+    # - Name: simulator2D
+    #   Version: 0.0
+    #   Parameters:
+    #         # logging level for the process
+    #         log: INFO
+    #         # Whether to wait for timer interrupts when sending samples
+    #         use_timer: false
+    #         # Sample rate (Hz) to use when use_timer=false
+    #         sample_rate: 200
+    #         # Number of neurons to simulate
+    #         n_neurons: 192
+    #         # Max. mouse velocity for normalization
+    #         max_v: 25.0
+    #         # Duration (seconds) of the test
+    #         duration: 600 
+    #           # Stream to use as input
+    #         in_stream: 'mouse_vel'
+    #         max_samples: 100000
+    # - Name: spike_gen_1
+    #   Version: 0.0
+    #   Parameters:
+    #         # logging level for the process
+    #         log: INFO
+    #         # Whether to wait for timer interrupts when sending samples
+    #         use_timer: false
+    #         # Sample rate (Hz) of firing rate data
+    #         fr_sample_rate: 200
+    #         # Sample rate (Hz) to use when use_timer=false
+    #         sample_rate: 1000
+    #         # Continuos data rate (Hz) to use when use_timer=false
+    #         continuous_rate: 30000
+    #         # action potential scale (mV to int16)
+    #         scale: 600
+    #         # Duration (seconds) of the test
+    #         duration: 600 
+    #         # random seed
+    #         random_seed: 42
+    #         # Output data stream name
+    #         output_stream_name: thresholdValues1
+    #         # Number of simulated neurons
+    #         n_neurons: 192
+    #         # Range of channels to generate data for
+    #         n_start: 0
+    #         n_end: 192
+    #         max_samples: 500000
+    # - Name: cb_gen_redis1
+    #   Version: 0.0
+    #   Parameters:
+    #         # logging level for the process
+    #         log: INFO
+    #         # ip address to use for broadcasting
+    #         broadcast_ip: 192.168.137.255
+    #         # port to use for broadcasting
+    #         broadcast_port: 51002
+    #         # device to use for broadcasting
+    #         broadcast_device: enp3s0
+    #         # Frequency, in Hz, for broadcasting data
+    #         broadcast_rate: 1000
+    #         # Frequency, in Hz, at which artificial data is sampled
+    #         sampling_frequency: 30000
+    #         # Number of channels associated with the binary file, or for creating a ramp function
+    #         num_channels: 192
+    #         # Timestamp of first sent Cerebus packet
+    #         initial_timestamp: 1
+    #         # Log loop time to log.txt file?
+    #         log_time: 1
+    #         # Input data stream name
+    #         input_stream_name: thresholdValues1
