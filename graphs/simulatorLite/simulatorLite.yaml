@@ -1,0 +1,87 @@
+
+metadata:
+    participant_id: 0
+    graph_name:                simulatorLite
+    session_description:       2D cursor task neural data simulation, with preparatory activity and xPC formatted output 
+
+# ----------------------------------------------------- 
+
+# node-specific parameters
+nodes:
+  - name:             mouseAdapter
+    nickname:         mouseAdapterSim
+    module:           ../brand-modules/brand-simulator
+    run_priority:     99
+    redis_inputs:     []
+    redis_outputs:    [mouse_vel]
+    parameters:
+        # Logging level for the process
+        log: INFO
+        # Number of samples we're expecting to see per Redis stream entry
+        samples_per_redis_stream: 1
+        # Sample rate in Hz
+        sample_rate: 200
+        # Mouse device ID
+#            mouse_device: /dev/input/by-id/usb-Logitech_Gaming_Mouse_G502_0D7534623937-event-mouse
+#            mouse_device: /dev/input/by-id/usb-Logitech_USB_Optical_Mouse-event-mouse
+#            mouse_device: /dev/input/by-id/usb-PixArt_Dell_MS116_USB_Optical_Mouse-event-mouse
+#            mouse_device: /dev/input/by-id/usb-PixArt_USB_Optical_Mouse-event-mouse
+        mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
+        # Max number of samples to store in Redis
+        max_samples: 6000
+
+    # - Name: udp_get_data
+    #   Version: 0.0
+    #   Parameters:
+    #         # logging level for the process
+    #         log: INFO
+    #         # Number of samples we're expecting to see per Redis stream entry
+    #         udp_ip: 192.168.1.104 # recv at simulator machine ip address
+    #         udp_port: 53018
+    #         max_samples: 6000
+
+  - name:             sim2D_prep
+    nickname:         sim2D_prep
+    module:           ../brand-modules/brand-simulator
+    run_priority:     99
+    redis_inputs:     [mouse_vel]
+    redis_outputs:    [firing_rates]
+    parameters:
+        # logging level for the process
+        log: INFO
+        # Number of neurons to simulate
+        n_neurons: 256
+        # Max. mouse velocity for normalization
+        max_v: 25.0
+        # Stream to use as input
+        in_stream: 'mouse_vel'
+        # Max # of samples to store in Redis
+        max_samples: 6000
+
+  - name:             thresholds_udp
+    nickname:         thresholds_udp
+    module:           ../brand-modules/brand-simulator
+    run_priority:     99
+    redis_inputs:     [firing_rates]
+    redis_outputs:    [threshold_values]
+    parameters:
+        # logging level for the process
+        log: INFO
+        # Sample rate (Hz) of firing rate data
+        fr_sample_rate: 200
+        # Sample rate (Hz) to use when use_timer=false
+        sample_rate: 1000
+        # random seed
+        random_seed: 42
+        # Output data stream name
+        input_stream: firing_rates
+        # Output data stream name
+        output_stream: threshold_values
+        # Number of simulated neurons
+        n_neurons: 256
+        # Max # of samples to store in Redis
+        max_samples: 30000
+        # UDP config 
+        udp_ip:             192.168.1.101 # send to brand machine ip address
+        udp_port:           50114
+        udp_interface:      null

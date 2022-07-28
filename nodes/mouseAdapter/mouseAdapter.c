@@ -98,13 +98,13 @@ int main(int argc_main, char **argv_main) {
 	
 	int rc;
 
-	printf("starting\n");
+	printf("[%s] Parsing command line args...\n", NICKNAME);
 
 	// Parse command line args
 	command_line_args_t command_line_args;
 	parse_command_line_args(argc_main, argv_main, &command_line_args);
 
-	printf("parsed comand line args\n");
+	printf("[%s] Parsed command line args...\n", NICKNAME);
 
 	// Parse nickname from args
     strcpy(NICKNAME, command_line_args.node_stream_name); 
@@ -174,15 +174,15 @@ int main(int argc_main, char **argv_main) {
 	// Mouse Initialization
 	mouse_fd = open(graph_parameters.mouse_device, O_RDONLY);
 	if (mouse_fd < 0) {
-		printf("Error opening mouse. Status code %d.\n", mouse_fd);
+		printf("[%s] Error opening mouse. Status code %d.\n", NICKNAME, mouse_fd);
 		return 1;
 	}
 
 	/* Spawn Mouse thread */
-	printf("Starting Mouse Thread \n");
+	printf("[%s] Starting mouse thread\n", NICKNAME);
 	rc = pthread_create(&listenerThread, NULL, mouseListenerThread, NULL);
 	if(rc) {
-		printf("Mouse thread failed to initialize!!\n");
+		printf("[%s] Mouse thread failed to initialize!!\n", NICKNAME);
 	}
 
     int sample_rate = graph_parameters.sample_rate;
@@ -330,7 +330,7 @@ void initialize_parameters(graph_parameters_t *p, redisContext *c)
     //redisReply *reply = NULL; bool bgsave_flag; int rediswritetime;
     const nx_json *supergraph_json = get_supergraph_json(c, reply, SUPERGRAPH_ID); 
     if (supergraph_json == NULL) {
-        emit_status(c, NICKNAME, NODE_FATAL_ERROR,"No supergraph found for initialization. Aborting.");
+        emit_status(c, NICKNAME, NODE_FATAL_ERROR, "No supergraph found for initialization. Aborting.");
         exit(1);
     }
 
@@ -348,14 +348,8 @@ void initialize_parameters(graph_parameters_t *p, redisContext *c)
 	printf("[%s] mouse_device: %s\n", NICKNAME, p->mouse_device);
     printf("[%s] max_samples: %d\n", NICKNAME, p->max_samples);
 
-	printf("done initialization");
-
     // Free memory, since all relevant information has been transfered to the parameter struct at this point
-    // using memcpy and strcpy commands
-    //nx_json_free(supergraph_json);
-	//freeReplyObject(reply);
-
-	printf("done initialization");
+    //nx_json_free(supergraph_json);	
 }
 
 void shutdown_process() {
