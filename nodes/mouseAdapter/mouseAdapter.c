@@ -284,40 +284,6 @@ void initialize_signals() {
 	printf("[%s] Signal handlers installed.\n", NICKNAME);
 }
 
-//------------------------------------
-// Handler functions
-//------------------------------------
-
-/*
-void initialize_parameters(graph_parameters_t *p, char *yaml_path) {
-	// create the strings to pull everything in from the yaml file
-	char samples_per_redis_stream_string[16] = {0};
-    char sample_rate_string[16] = {0};
-	char mouse_device_string[100] = {0};
-	char max_samples_string[16] = {0};
-
-	// pull it in from the YAML
-	load_YAML_variable_string(PROCESS, yaml_path, "samples_per_redis_stream",
-		samples_per_redis_stream_string, 
-		sizeof(samples_per_redis_stream_string));
-	load_YAML_variable_string(PROCESS, yaml_path, "sample_rate",
-		sample_rate_string, 
-		sizeof(sample_rate_string));
-	load_YAML_variable_string(PROCESS, yaml_path, "mouse_device",
-		mouse_device_string, 
-		sizeof(mouse_device_string));
-	load_YAML_variable_string(PROCESS, yaml_path, "max_samples",
-		max_samples_string, 
-		sizeof(max_samples_string));
-
-	// add it into yaml parameters struct
-	p->samples_per_redis_stream = atoi(samples_per_redis_stream_string);
-    p->sample_rate = atoi(sample_rate_string);
-	strcpy(p->mouse_device, mouse_device_string);
-	p->max_samples = atoi(max_samples_string);
-}
-*/
-
 //------------------------------------------------------------------
 // Initialize the parameters based on the supergraph. This reads from
 // a valid supergraph structure and then populates the parameters struct
@@ -334,7 +300,6 @@ void initialize_parameters(graph_parameters_t *p, redisContext *c)
         exit(1);
     }
 
-	
     p->samples_per_redis_stream = get_parameter_int(supergraph_json, NICKNAME , "samples_per_redis_stream");
 	p->sample_rate = get_parameter_int(supergraph_json, NICKNAME , "sample_rate");
     //get_parameter_string(supergraph_json   , NICKNAME , "mouse_device"    , &p->mouse_device);

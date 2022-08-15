@@ -31,8 +31,7 @@ class SpikeGenerator(BRANDNode):
         
         logging.info(f'Sampling period: {self.period}')
 
-        self.i = 0  # initialize time variable
-        self.ii = 0
+        self.i = 0  # initialize sample # variable
 
         self.last_id = '$'
         self.last_time = time.monotonic()
@@ -90,8 +89,6 @@ class SpikeGenerator(BRANDNode):
 
         self.build()
 
-        self.start_time = time.monotonic()
-
         self.last_time = time.monotonic()
 
         # send samples to Redis
@@ -109,88 +106,30 @@ class SpikeGenerator(BRANDNode):
 
             # TODO: pre-allocate self.rates
             self.rates = np.frombuffer(self.entry_dict[b'rates'],
-                                        dtype=np.float64)
-            #self.rate_rep = np.tile(self.rates, (self.ms_iterations,1))
-            #self.rate_rep = np.tile(self.rates, (self.fr_iterations,1))
-            
-            
-            #if self.i ==0:
-            #    logging.info(f'Rates: {self.rates[0:8]}', extra=log_d)
-            #    logging.info(f'Rates sub {self.rates_sub[0:8]}', extra=log_d)
-            
+                                        dtype=np.float32)            
             
             self.sample['i_in'] = self.entry_dict[b'i_in']
 
-            #self.spikes = np.random.binomial(1, self.rate_rep / self.continuous_rate)
-            #self.buffer30k_spikes = self.spikes
-            #self.buffer30k_spikes[:self.buffer_window,:] = self.buffer30k_spikes[-self.buffer_window:,:]
-            
-            #self.buffer1k_spikes = np.random.binomial(1, self.rate_rep / self.sample_rate)
-            
-            #self.buffer30k_spikes[:-self.buffer_window,:] = np.random.binomial(1, self.rate_rep / self.continuous_rate)
-
-            #self.buffer30k_continuous = self.scale*fftconvolve(self.buffer30k_spikes, self.ap, 
-            #    mode='full', axes=0)[:self.fr_iterations*self.ms_iterations+self.buffer_window]
-            #self.buffer30k_continuous[:self.buffer_window,:] += self.buffer30k_window
-            #self.buffer30k_window = self.buffer30k_continuous[-self.buffer_window:,:]
-            #for n in range(0, self.split_conv):
-            #    self.buffer30k_continuous[:,self.step_conv*n:self.step_conv*(n+1)] = self.scale*fftconvolve(
-            #            self.buffer30k_spikes[:,self.step_conv*n:self.step_conv*(n+1)], self.ap, mode='same', axes=0)
-            #self.buffer30k_continuous[:,int(self.n_neurons/2):] = self.scale*fftconvolve(self.buffer30k_spikes[:,int(self.n_neurons/2):], self.ap, mode='same', axes=0)
-
-
-            #self.ii = self.buffer_window
-            #self.ii = 0 
             for s in range(0, self.fr_iterations):
-
-                while time.monotonic() < self.last_time + s*self.period: 
-                    time.sleep(1e-6)
 
                 self.buffer1k_spikes = np.random.binomial(1, self.rates/ self.sample_rate)
 
-                #for ss in range(0, self.ms_iterations):
-
-                    #self.modified_rates = self.rates
-                    #if self.spike_last_samples >= self.refractory_period:
-                    #    self.modified_rates = 0*self.rates
-                    
-                #self.spikes = np.random.binomial(1, self.rate_rep / self.continuous_rate)
-                
-                # filter out refractory period
-
-                    #if self.spike < 1:
-                    #    self.spike_last_samples += 1
-
-                    #self.buffer30k_spikes.append(self.spikes)
-                #self.buffer30k_spikes[self.ii:self.ii+self.ms_iterations,:] = self.spikes
-                #self.buffer30k_spikes[self.ii:self.ii+self.ms_iterations,0:16] += 50
-                #self.buffer30k_spikes[self.ii:self.ii+self.ms_iterations,16:32] += 100
-                
-
-                #print(list(self.buffer30k_spikes))
-                #print(len(self.buffer30k_spikes))
-
-                #self.buffer30k_continuous = self.scale*fftconvolve(self.buffer30k_spikes, self.ap, mode='full', axes=0)
-
-                # # # send udp
-
-                #print(ii)
                 self.sample['i'] = self.i
-                #self.sample['thresholds_30k'] = self.buffer30k_spikes[self.ii:self.ii+self.ms_iterations,:].tobytes()
-                #self.sample['continuous'] = (self.buffer30k_continuous[self.ii:self.ii+self.ms_iterations,:]).astype(np.int16).tobytes()
                 self.sample['thresholds'] = self.buffer1k_spikes.astype(np.int8).tobytes()                    
 
-                
+                # wait before sending sample (should replace with clock_nanosleep)
+                while time.monotonic() < self.last_time + s*self.period: 
+                    time.sleep(1e-6)
 
                 self.sample['ts'] = time.monotonic()
-                #self.r.xadd('thresholdValues', self.sample, maxlen=1000, approximate=True)
                 self.r.xadd(self.output_stream, self.sample, maxlen=self.max_samples, approximate=True)
+                
                 self.sample['ts_end'] = time.monotonic()
                 
                 self.send_udp()
 
                 self.i += 1
-                #self.ii += self.ms_iterations
+
 
         logging.info('Exiting')
 

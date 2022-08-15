@@ -68,12 +68,11 @@ class Simulator2D(BRANDNode):
 
         self.mouse_data = np.zeros((2, 1), dtype=np.int16)
         self.mouse_click = 0
-        self.mouse_clipped = np.zeros_like(self.mouse_data, dtype=np.float64)
-        self.v_t = np.zeros_like(self.mouse_clipped, dtype=np.float64)
-        self.p_t_clipped = np.zeros_like(self.p_t, dtype=np.float64)
+        self.mouse_clipped = np.zeros_like(self.mouse_data, dtype=np.float)
+        self.v_t = np.zeros_like(self.mouse_clipped, dtype=np.float)
+        self.p_t_clipped = np.zeros_like(self.p_t, dtype=np.float)
 
-        # TODO: change rates to float16
-        self.rates = np.zeros((self.n_neurons, 1))
+        self.rates = np.zeros((self.n_neurons, 1), dtype=np.float)
 
         logging.info(f'Publishing firing rates for {self.n_neurons} neurons...')
 
@@ -138,8 +137,6 @@ class Simulator2D(BRANDNode):
             self.i += np.uint32(1)
 
         logging.info('Exiting')
-
-
 
     def update_preparatory_state(self):
         
