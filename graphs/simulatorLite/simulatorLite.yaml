@@ -1,6 +1,6 @@
 
 metadata:
-    participant_id: 0
+    participant_id:            sim
     graph_name:                simulatorLite
     session_description:       2D cursor task neural data simulation, with preparatory activity and xPC formatted output 
 
