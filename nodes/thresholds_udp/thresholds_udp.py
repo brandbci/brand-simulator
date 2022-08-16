@@ -105,9 +105,8 @@ class SpikeGenerator(BRANDNode):
             self.last_id = self.entry_id
 
             # TODO: pre-allocate self.rates
-            self.rates = np.frombuffer(self.entry_dict[b'rates'],
-                                        dtype=np.float32)            
-            
+            self.rates = np.frombuffer(self.entry_dict[b'rates'], dtype=np.float32)            
+
             self.sample['i_in'] = self.entry_dict[b'i_in']
 
             for s in range(0, self.fr_iterations):

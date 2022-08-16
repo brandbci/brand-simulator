@@ -21,8 +21,6 @@ typedef struct graph_parameters_t {
 	int max_samples;
 } graph_parameters_t;
 
-
-void initialize_redis(command_line_args_t *p);
 void initialize_signals();
 void handler_SIGINT(int exitStatus);
 //void handler_SIGUSR1(int exitStatus);
@@ -100,16 +98,9 @@ int main(int argc_main, char **argv_main) {
 
 	printf("[%s] Parsing command line args...\n", NICKNAME);
 
-	// Parse command line args
-	command_line_args_t command_line_args;
-	parse_command_line_args(argc_main, argv_main, &command_line_args);
+	// Parse command line args and init redis
+	redis_context = parse_command_line_args_init_redis(argc_main, argv_main, NICKNAME);
 
-	printf("[%s] Parsed command line args...\n", NICKNAME);
-
-	// Parse nickname from args
-    strcpy(NICKNAME, command_line_args.node_stream_name); 
-
-	initialize_redis(&command_line_args);
 	initialize_signals();
 
 	// bring in parameters from the yaml setup file
@@ -257,24 +248,6 @@ int main(int argc_main, char **argv_main) {
 
 }
 
-
-void initialize_redis(command_line_args_t *p) {
-
-	
-	printf("[%s] Initializing Redis...\n", NICKNAME);
-
-	//redis_context = redisConnect(redis_ip, atoi(redis_port));
-	//redis_context = connect_to_redis_from_commandline_flags(argc, argv);
-	redis_context = redisConnect(p->redis_host, p->redis_port); 
-	if (redis_context->err) {
-		printf("[%s] Redis connection error: %s\n", NICKNAME, redis_context->errstr);
-		exit(1);
-	}
-
-	printf("[%s] Redis initialized.\n", NICKNAME);
-		
-}
-
 void initialize_signals() {
 
 	printf("[%s] Attempting to initialize signal handlers.\n", NICKNAME);
@@ -293,7 +266,6 @@ void initialize_parameters(graph_parameters_t *p, redisContext *c)
     // Initialize Supergraph_ID 
     char SUPERGRAPH_ID[] = "0";
     // Now fetch data from the supergraph and populate entries
-    //redisReply *reply = NULL; bool bgsave_flag; int rediswritetime;
     const nx_json *supergraph_json = get_supergraph_json(c, reply, SUPERGRAPH_ID); 
     if (supergraph_json == NULL) {
         emit_status(c, NICKNAME, NODE_FATAL_ERROR, "No supergraph found for initialization. Aborting.");
@@ -302,12 +274,11 @@ void initialize_parameters(graph_parameters_t *p, redisContext *c)
 
     p->samples_per_redis_stream = get_parameter_int(supergraph_json, NICKNAME , "samples_per_redis_stream");
 	p->sample_rate = get_parameter_int(supergraph_json, NICKNAME , "sample_rate");
-    //get_parameter_string(supergraph_json   , NICKNAME , "mouse_device"    , &p->mouse_device);
 	strcpy(p->mouse_device, get_parameter_string(supergraph_json, NICKNAME , "mouse_device"));
     p->max_samples = get_parameter_int(supergraph_json, NICKNAME , "max_samples");
-	
 	 
 	printf("[%s] Parameters have been loaded.\n", NICKNAME);
+
     printf("[%s] samples_per_redis_stream: %d\n", NICKNAME, p->samples_per_redis_stream);
     printf("[%s] sample_rate: %d\n", NICKNAME, p->sample_rate);
 	printf("[%s] mouse_device: %s\n", NICKNAME, p->mouse_device);

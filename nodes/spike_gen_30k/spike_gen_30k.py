@@ -12,6 +12,8 @@ from brand import BRANDNode
 class SpikeGenerator30k(BRANDNode):
     def __init__(self):
 
+        super().__init__()
+
         # load parameters
         self.fr_sample_rate = self.parameters['fr_sample_rate']
         self.sample_rate = self.parameters['sample_rate']

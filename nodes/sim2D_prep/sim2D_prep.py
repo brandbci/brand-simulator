@@ -68,11 +68,11 @@ class Simulator2D(BRANDNode):
 
         self.mouse_data = np.zeros((2, 1), dtype=np.int16)
         self.mouse_click = 0
-        self.mouse_clipped = np.zeros_like(self.mouse_data, dtype=np.float)
-        self.v_t = np.zeros_like(self.mouse_clipped, dtype=np.float)
-        self.p_t_clipped = np.zeros_like(self.p_t, dtype=np.float)
+        self.mouse_clipped = np.zeros_like(self.mouse_data, dtype=np.float32)
+        self.v_t = np.zeros_like(self.mouse_clipped, dtype=np.float32)
+        self.p_t_clipped = np.zeros_like(self.p_t, dtype=np.float32)
 
-        self.rates = np.zeros((self.n_neurons, 1), dtype=np.float)
+        self.rates = np.zeros((self.n_neurons, 1), dtype=np.float32)
 
         logging.info(f'Publishing firing rates for {self.n_neurons} neurons...')
 
@@ -123,7 +123,7 @@ class Simulator2D(BRANDNode):
             # send samples to Redis
             self.sample['i'] = self.i.tobytes()
             self.sample['i_in'] = self.i_in
-            self.sample['rates'] = self.rates.tobytes()
+            self.sample['rates'] = self.rates.astype(np.float32).tobytes()
             self.sample['ts'] = time.monotonic()
             self.sample['prep_subspace'] = self.x_t[0:2,:].tobytes()
             self.sample['move_subspace'] = self.x_t[2:4,:].tobytes()
