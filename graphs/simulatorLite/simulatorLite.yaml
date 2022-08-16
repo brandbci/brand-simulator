@@ -30,15 +30,21 @@ nodes:
         # Max number of samples to store in Redis
         max_samples: 6000
 
-    # - Name: udp_get_data
-    #   Version: 0.0
-    #   Parameters:
-    #         # logging level for the process
-    #         log: INFO
-    #         # Number of samples we're expecting to see per Redis stream entry
-    #         udp_ip: 192.168.1.104 # recv at simulator machine ip address
-    #         udp_port: 53018
-    #         max_samples: 6000
+  - name:             udp_get_data
+    nickname:         udp_get_data_sim
+    module:           ../brand-modules/brand-simulator
+    run_priority:     99
+    redis_inputs:     []
+    redis_outputs:    [...]
+    parameters:
+        # Logging level for the process
+        log: INFO
+        # Recv UDP at simulator machine IP address
+        udp_ip: 192.168.1.104 
+        # Port from which to read UDP
+        udp_port: 53018
+        # Max number of samples to store in Redis
+        max_samples: 6000
 
   - name:             sim2D_prep
     nickname:         sim2D_prep
