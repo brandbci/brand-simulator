@@ -287,7 +287,7 @@ int main(int argc_main, char **argv_main) {
         }
 
         // Sleep until next deadline
-        clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &deadline, NULL);
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL);
 
         // Wait until [sample_buffering] samples have already been buffered before sending packets
         if (samples_received > sample_buffering)
@@ -368,7 +368,7 @@ int main(int argc_main, char **argv_main) {
             if (bool_serial_clk)
             {
                 // Send serial message to Arduino (or other peripheral peripherial) to trigger clock pulse
-                rc_serial = serialport_writebyte(fd_serial, (uint8_t)1);
+                rc_serial = serialport_writebyte(fd_serial, (uint8_t)2);
                 if(rc_serial==-1) error("error writing",0);
             }
         }         
