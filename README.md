@@ -5,7 +5,12 @@ BRAND module for neural simulator
 
 ## How to use
 
-The simulator is run using [BRAND](https://github.com/snel-repo/realtime_rig_dev/tree/dev). This will require first starting the BRAND supervisor on you simulator machine:
+The simulator is run using [BRAND](https://github.com/snel-repo/realtime_rig_dev/tree/dev). This will require first running the setup within the BRAND directory:
+```
+cd <path_to_brand_directory>
+source setup.sh
+```
+After the setup has been run, a BRAND supervisor must be started on your simulator machine:
 ```
 supervisor
 ```
@@ -20,4 +25,4 @@ redis-cli -p <port> (e.g 6380)
 XADD supervisor_ipstream * commands startGraph file <path_to_simulator_graph_yaml>
 ```
 
-The simulator will start after this, and will start outputting data after some seconds.
+The simulator will start after this, and will being outputting data after some seconds.
