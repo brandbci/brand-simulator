@@ -16,6 +16,7 @@ class Simulator2D(BRANDNode):
         self.n_neurons = self.parameters['n_neurons']
         self.max_v = self.parameters['max_v']
         self.in_stream = self.parameters['in_stream']
+        self.click_tuning_enable = self.parameters['click_tuning_enable']
         self.max_samples = self.parameters['max_samples']
 
         self.i = np.uint32(0) 
@@ -46,6 +47,7 @@ class Simulator2D(BRANDNode):
         self.target_pos = [0,0]
         self.target_state = 0
         self.target_state_last = 0
+        self.target_pos_last = [0,0]
 
         self.moving = 0
 
@@ -87,6 +89,7 @@ class Simulator2D(BRANDNode):
             'move_subspace': self.x_t[2:4,:].tobytes(),
             'target_state': self.target_state,
             'moving': self.moving,
+            't_t': self.t_t,
             'i': self.i.tobytes(),   
             'i_in': self.i_in.tobytes() 
         }
@@ -117,7 +120,8 @@ class Simulator2D(BRANDNode):
 
             # compute firing rates
             self.rates[:] = self.fr_mod * (self.c @ self.x_t) + self.fr_mean
-            self.rates = self.rates + self.mouse_click * self.click_tuning 
+            if self.click_tuning_enable:
+                self.rates = self.rates + self.mouse_click * self.click_tuning 
             self.rates = np.clip(self.rates, 0, None)
 
             # send samples to Redis
@@ -129,6 +133,7 @@ class Simulator2D(BRANDNode):
             self.sample['move_subspace'] = self.x_t[2:4,:].tobytes()
             self.sample['target_state'] = self.target_state
             self.sample['moving'] = self.moving
+            self.sample['t_t'] = self.t_t
 
             self.r.xadd('firing_rates', self.sample, maxlen=self.max_samples, approximate=True)
             
@@ -140,15 +145,14 @@ class Simulator2D(BRANDNode):
 
     def update_preparatory_state(self):
         
-        if self.target_state != self.target_state_last and self.target_state != 2:
-            self.t_t = 1
-            self.t_t_duration = 0
+        #if (self.target_state != self.target_state_last and 
+        #        (self.target_state == 1 or
+        #            (self.target_state == 2 and self.target_state_last != 1))):
+
 
         #print(f"t_t: {self.t_t} -- t_s: {self.target_state} -- t_s_l: {self.target_state_last} -- v_t: {np.linalg.norm(self.v_t)}")
 
-        self.target_state_last = self.target_state
-
-        if np.linalg.norm(self.v_t) > 0.2: 
+        if np.linalg.norm(self.v_t) > 0.1: 
             self.v_t_duration += 1
             if self.v_t_duration > 2:
                 self.moving = 1
@@ -156,11 +160,28 @@ class Simulator2D(BRANDNode):
             self.v_t_duration = 0
             self.moving = 0
 
-
-        if self.moving == 1 and self.t_t_duration > 200/5: # prep activity at least 200ms
+        # no prep activity when no target or on target
+        if self.target_state < 1 or self.target_state > 2: 
             self.t_t = 0
+        # if moving and prep activity has already lasted for a bit, turn off 
+        elif self.moving == 1 and self.t_t_duration > 200/5:
+            self.t_t = 0
+        # start prep activity when change of target
+        elif (abs(self.target_pos[0] - self.target_pos_last[0]) > 0.1 or
+                abs(self.target_pos[1] - self.target_pos_last[1]) > 0.1):
+            self.t_t = 1
+        # start prep activity when target is shown/on and not moving 
+        elif self.moving == 0 and (self.target_state == 1 or self.target_state == 2):
+            self.t_t = 1    
 
-        self.t_t_duration += 1
+        if self.t_t > 0:
+            self.t_t_duration += 1
+        else:
+            self.t_t_duration = 0        
+
+        self.target_state_last = self.target_state
+        self.target_pos_last[0] = self.target_pos[0]
+        self.target_pos_last[1] = self.target_pos[1]
 
         u_t = np.array([[self.target_pos[0]-self.cursor_pos_start[0]],[self.target_pos[1]-self.cursor_pos_start[1]]])
 
