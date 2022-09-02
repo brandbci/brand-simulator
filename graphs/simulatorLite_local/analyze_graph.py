@@ -161,6 +161,9 @@ gdf['mouse_pos_x'] = np.cumsum(gdf['mouse_vel_x'])
 gdf['mouse_pos_y'] = np.cumsum(gdf['mouse_vel_y'])
 
 gdf.dropna(inplace=True)
+gdf.drop(gdf.tail(1000).index,
+        inplace = True)
+
 
 #i_max = (gdf['i_thres'].iloc[-1]+1) - (gdf['i_thres'].iloc[-1]+1)%5
 #print(i_max)
@@ -289,12 +292,13 @@ t_t = np.stack(gdf['t_t'])
 for i in i_thres[1:-1]:
     if moving[int(i)] != moving[int(i)-1] and moving[int(i)] == 1:
         i_move_start.append(i)
-axes[0].vlines(i_move_start, ymin=-1, ymax=1, colors='b', linestyles='dashed')
+#axes[0].vlines(i_move_start, ymin=-1, ymax=1, colors='b', linestyles='dashed')
 axes[1].vlines(i_move_start, ymin=-1, ymax=1, colors='b', linestyles='dashed')
 axes[2].vlines(i_move_start, ymin=0, ymax=100, colors='b', linestyles='dashed')
 
 for i in i_thres[1:-1]:
-    if target_state[int(i)] != target_state[int(i)-1] and target_state[int(i)] == 1:
+    if (target_state[int(i)] != target_state[int(i)-1] and 
+            ((target_state[int(i)] == 1) or (target_state[int(i)] == 2 and target_state[int(i)-1] != 1))):
         i_target_change.append(i)
 axes[0].vlines(i_target_change, ymin=-1, ymax=1, colors='g', linestyles='dashed')
 axes[2].vlines(i_target_change, ymin=0, ymax=100, colors='g', linestyles='dashed')

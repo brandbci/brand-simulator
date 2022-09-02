@@ -88,6 +88,6 @@ nodes:
         # Max # of samples to store in Redis
         max_samples: 30000
         # UDP config 
-        udp_ip:             192.168.1.101 # send to brand machine ip address
+        udp_ip:             192.168.1.255 # send to brand machine ip address
         udp_port:           50114
         udp_interface:      null
