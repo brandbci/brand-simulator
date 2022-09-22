@@ -16,6 +16,8 @@ class Simulator2D(BRANDNode):
         self.in_stream = self.parameters['in_stream']
         self.max_samples = self.parameters['max_samples']
 
+        self.max_v_mag = np.sqrt(2) * self.max_v
+
         self.i = np.uint32(0)
         self.i_in = np.uint32(0)
 
@@ -34,7 +36,7 @@ class Simulator2D(BRANDNode):
                                                     1)) * (100.0) - 50.0
 
         # generate directional tuning vectors
-        c = np.random.uniform(size=(self.n_neurons, 4)) * 2 - 1
+        c = np.random.uniform(size=(self.n_neurons, 2)) * 2 - 1
         self.c = c / np.sqrt((c**2).sum(axis=1, keepdims=True))
 
         logging.info('Firing rates parameters initiated for '
