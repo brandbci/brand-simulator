@@ -248,6 +248,10 @@ int main(int argc_main, char **argv_main) {
             else
             {
                 samples_received = reply -> integer;
+                // update deadline
+                if(!custom_init_deadline) {
+                    clock_gettime(CLOCK_MONOTONIC, &deadline);
+                }
             }
         }
         else
