@@ -165,7 +165,7 @@ int main(int argc_main, char **argv_main) {
         NICKNAME, deadline.tv_nsec);
 
     char last_redis_id [30];
-    strcpy(last_redis_id, "$");
+    strcpy(last_redis_id, "0-0");
     char redis_string[256] = {0};
 
     uint32_t buffer_write_ind = 0;
