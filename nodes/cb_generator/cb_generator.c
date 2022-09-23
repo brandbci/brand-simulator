@@ -146,7 +146,7 @@ int main(int argc_main, char **argv_main) {
     struct timespec deadline;
 
     // TODO: get initial deadline for synching processes
-    int custom_init_deadline = 1;
+    int custom_init_deadline = 0;
     if(custom_init_deadline)
     {     	    
         struct timespec custom_deadline = get_graph_load_timespec(redis_context);
@@ -165,8 +165,7 @@ int main(int argc_main, char **argv_main) {
         NICKNAME, deadline.tv_nsec);
 
     char last_redis_id [30];
-    strcpy(last_redis_id, "0-0");
-    //strcpy(last_redis_id, "$");
+    strcpy(last_redis_id, "$");
     char redis_string[256] = {0};
 
     uint32_t buffer_write_ind = 0;
