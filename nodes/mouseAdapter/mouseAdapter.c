@@ -103,10 +103,10 @@ int main(int argc_main, char **argv_main) {
 
 	initialize_signals();
 
-	// bring in parameters from the yaml setup file
-	//yaml_parameters_t yaml_parameters = {};
+	// bring in parameters from the supergraph
 	graph_parameters_t graph_parameters;
 	initialize_parameters(&graph_parameters, redis_context);
+	
 	int16_t sampPerRedis = graph_parameters.samples_per_redis_stream;
 
 	// array to keep track of system time

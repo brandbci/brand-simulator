@@ -33,7 +33,7 @@ nodes:
         # Log loop time?
         bool_log_time: 1
         # Send serial output for Arduino clk?
-        bool_serial_clk: 0
+        bool_serial_clk: 1
         # Input data stream name
         input_stream_name: threshold_values1
         # How many samples to buffer

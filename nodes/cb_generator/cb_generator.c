@@ -46,6 +46,7 @@ void handler_SIGALRM(int signum); // done
 void handler_SIGINT(int signum);
 void handler_SIGUSR1(int signum);
 void initialize_parameters(graph_parameters_t *p, redisContext *c);
+struct timespec get_graph_load_timespec(redisContext *c);
 void shutdown_process();
 
 uint32_t parse_ip_str(char *ip_str);
@@ -145,13 +146,13 @@ int main(int argc_main, char **argv_main) {
     struct timespec deadline;
 
     // TODO: get initial deadline for synching processes
-    int custom_init_deadline = 0;
-
+    int custom_init_deadline = 1;
     if(custom_init_deadline)
     {     	    
-        deadline.tv_sec = strtoul(argv_main[3], NULL, 0);
-        deadline.tv_sec  += 10;
-        deadline.tv_nsec = 0;
+        struct timespec custom_deadline = get_graph_load_timespec(redis_context);
+        deadline.tv_sec = custom_deadline.tv_sec;
+        deadline.tv_sec += 10;
+        deadline.tv_nsec = custom_deadline.tv_nsec;
     }
     else
     {
@@ -287,7 +288,7 @@ int main(int argc_main, char **argv_main) {
         }
 
         // Sleep until next deadline
-        clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &deadline, NULL);
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL);
 
         // Wait until [sample_buffering] samples have already been buffered before sending packets
         if (samples_received > sample_buffering)
@@ -368,7 +369,7 @@ int main(int argc_main, char **argv_main) {
             if (bool_serial_clk)
             {
                 // Send serial message to Arduino (or other peripheral peripherial) to trigger clock pulse
-                rc_serial = serialport_writebyte(fd_serial, (uint8_t)1);
+                rc_serial = serialport_writebyte(fd_serial, (uint8_t)2);
                 if(rc_serial==-1) error("error writing",0);
             }
         }         
@@ -540,7 +541,6 @@ void initialize_parameters(graph_parameters_t *p, redisContext *c)
     // Initialize Supergraph_ID 
     char SUPERGRAPH_ID[] = "0";
     // Now fetch data from the supergraph and populate entries
-    //redisReply *reply = NULL; bool bgsave_flag; int rediswritetime;
     const nx_json *supergraph_json = get_supergraph_json(c, reply, SUPERGRAPH_ID); 
     if (supergraph_json == NULL) {
         emit_status(c, NICKNAME, NODE_FATAL_ERROR, "No supergraph found for initialization. Aborting.");
@@ -561,6 +561,29 @@ void initialize_parameters(graph_parameters_t *p, redisContext *c)
 
     // Free memory, since all relevant information has been transfered to the parameter struct at this point
     //nx_json_free(supergraph_json);	
+}
+
+struct timespec get_graph_load_timespec(redisContext *c) 
+{
+    // Initialize Supergraph_ID 
+    char SUPERGRAPH_ID[] = "0";
+    // Now fetch data from the supergraph and populate entries
+    const nx_json *supergraph_json = get_supergraph_json(c, reply, SUPERGRAPH_ID); 
+    if (supergraph_json == NULL) {
+        emit_status(c, NICKNAME, NODE_FATAL_ERROR, "No supergraph found for initialization. Aborting.");
+        exit(1);
+    }
+
+    struct timespec graph_loaded_timespec;
+
+    unsigned long graph_loaded_ts = get_graph_load_ts_long(supergraph_json);
+    printf("[%s] Graph loaded ts: %lu nanoseconds.\n",
+        NICKNAME, graph_loaded_ts);
+
+    graph_loaded_timespec.tv_sec = graph_loaded_ts/1000000000L;
+    graph_loaded_timespec.tv_nsec = graph_loaded_ts - graph_loaded_timespec.tv_sec*1000000000L;
+
+    return graph_loaded_timespec;
 }
 
 uint32_t parse_ip_str(char *ip_str) {
