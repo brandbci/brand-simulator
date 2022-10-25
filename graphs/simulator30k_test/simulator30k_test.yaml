@@ -1,0 +1,130 @@
+
+metadata:
+    participant_id:            sim
+    graph_name:                simulatorLite
+    session_description:       2D cursor task neural data simulation, with preparatory activity and xPC formatted output 
+
+# ----------------------------------------------------- 
+
+nodes:
+  - name:             cb_generator
+    nickname:         cb_gen_1
+    module:           ../brand-modules/brand-simulator
+    run_priority:     99
+    redis_inputs:     [threshold_values]
+    redis_outputs:    [cb_gen_1]
+    parameters:
+        # logging level for the process
+        log: INFO
+        # ip address to use for broadcasting
+        broadcast_ip: 192.168.30.255
+        # port to use for broadcasting
+        broadcast_port: 51002
+        # device to use for broadcasting
+        broadcast_device: enp0s31f6
+        # Frequency, in Hz, for broadcasting data
+        broadcast_rate: 1000
+        # Frequency, in Hz, at which artificial data is sampled
+        sampling_frequency: 30000
+        # Number of channels associated with the binary file, or for creating a ramp function
+        num_channels: 96
+        # Timestamp of first sent Cerebus packet
+        initial_timestamp: 0
+        # Log loop time?
+        bool_log_time: 0
+        # Send serial output for Arduino clk?
+        bool_serial_clk: 0
+        # Input data stream name
+        input_stream_name: threshold_values1
+        # How many samples to buffer
+        sample_buffering: 10
+
+  - name:             spike_gen_30k
+    nickname:         spike_gen_1
+    module:           ../brand-modules/brand-simulator
+    run_priority:     99
+    redis_inputs:     [firing_rates]
+    redis_outputs:    [threshold_values1]
+    parameters:
+        # logging level for the process
+        log: INFO
+        # Sample rate (Hz) of firing rate data
+        fr_sample_rate: 200
+        # Sample rate (Hz) of node process
+        sample_rate: 1000
+        # Continuous data rate (Hz) for generated output
+        continuous_rate: 30000
+        # Random seed for data generation
+        random_seed: 42
+        # Action potential scale (mV to int16)
+        scale: 600
+        # Input data stream name
+        input_stream: firing_rates
+        # Output data stream name
+        output_stream: threshold_values1
+        # Number of total simulated neurons in firing rate input
+        n_neurons: 96
+        # Range of channels to generate data for
+        n_start: 0
+        n_end: 96
+        # Max samples to store in Redis (1 sample = 1/'sample rate' s)
+        max_samples: 20000
+
+  - name:             sim2D_prep
+    nickname:         sim2D_prep
+    module:           ../brand-modules/brand-simulator
+    run_priority:     99
+    redis_inputs:     [mouse_vel]
+    redis_outputs:    [firing_rates]
+    parameters:
+        # logging level for the process
+        log: INFO
+        # Number of neurons to simulate
+        n_neurons: 96
+        # Max. mouse velocity for normalization
+        max_v: 25.0
+        # Stream to use as input
+        in_stream: mouse_vel
+        # enable click tuning?
+        click_tuning_enable: false
+        # Max # of samples to store in Redis
+        max_samples: 6000
+
+  # - name:             udp_get_data
+  #   nickname:         udp_get_data_sim
+  #   module:           ../brand-modules/brand-simulator
+  #   run_priority:     99
+  #   redis_inputs:     []
+  #   redis_outputs:    [...]
+  #   parameters:
+  #       # Logging level for the process
+  #       log: INFO
+  #       # Recv UDP at simulator machine IP address
+  #       udp_ip: 192.168.1.104 
+  #       # Port from which to read UDP
+  #       udp_port: 53018
+  #       # Max number of samples to store in Redis
+  #       max_samples: 6000
+
+  - name:             mouseAdapter
+    nickname:         mouseAdapterSim
+    module:           ../brand-modules/brand-simulator
+    run_priority:     99
+    redis_inputs:     []
+    redis_outputs:    [mouse_vel]
+    parameters:
+        # Logging level for the process
+        log: INFO
+        # Number of samples we're expecting to see per Redis stream entry
+        samples_per_redis_stream: 1
+        # Sample rate in Hz
+        sample_rate: 200
+        # Mouse device ID
+#            mouse_device: /dev/input/by-id/usb-Logitech_Gaming_Mouse_G502_0D7534623937-event-mouse
+#            mouse_device: /dev/input/by-id/usb-Logitech_USB_Optical_Mouse-event-mouse
+#            mouse_device: /dev/input/by-id/usb-PixArt_Dell_MS116_USB_Optical_Mouse-event-mouse
+#            mouse_device: /dev/input/by-id/usb-PixArt_USB_Optical_Mouse-event-mouse
+        mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
+        # Max number of samples to store in Redis
+        max_samples: 6000
+
