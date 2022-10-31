@@ -58,7 +58,8 @@ class Simulator2D(BRANDNode):
         self.last_id = '$'
 
         self.sample = {
-            'ts': np.uint64().tobytes,  # time at which the output is written
+            # time at which the output is written
+            'ts': np.uint64(time.monotonic_ns()).tobytes,
             'rates': self.rates.tobytes(),
             'i': self.i.tobytes(),
             'i_in': self.i_in.tobytes()
