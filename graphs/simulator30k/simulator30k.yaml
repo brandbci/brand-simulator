@@ -31,7 +31,7 @@ nodes:
         # Timestamp of first sent Cerebus packet
         initial_timestamp: 1
         # Log loop time?
-        bool_log_time: 1
+        bool_log_time: 0
         # Send serial output for Arduino clk?
         bool_serial_clk: 1
         # Input data stream name
@@ -63,7 +63,7 @@ nodes:
         # Timestamp of first sent Cerebus packet
         initial_timestamp: 1
         # Log loop time?
-        bool_log_time: 1
+        bool_log_time: 0
         # Send serial output for Arduino clk?
         bool_serial_clk: 0
         # Input data stream name

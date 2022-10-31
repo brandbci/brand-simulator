@@ -1,7 +1,7 @@
 
 metadata:
     participant_id:            sim
-    graph_name:                simulatorLite
+    graph_name:                simulatorLite_local
     session_description:       2D cursor task neural data simulation, with preparatory activity and xPC formatted output 
 
 # ----------------------------------------------------- 
@@ -33,7 +33,7 @@ nodes:
         # Max # of samples to store in Redis
         max_samples: 300000
         # UDP config 
-        udp_ip:             192.168.1.101 # send to brand machine ip address
+        udp_ip:             127.0.0.1 # send to brand machine ip address
         udp_port:           50114
         udp_interface:      null
 
@@ -67,7 +67,7 @@ nodes:
         # Logging level for the process
         log: INFO
         # Recv UDP at simulator machine IP address
-        udp_ip: 192.168.1.104 
+        udp_ip: 127.0.0.1 
         # Port from which to read UDP
         udp_port: 53018
         # Max number of samples to store in Redis
@@ -87,10 +87,10 @@ nodes:
         # Sample rate in Hz
         sample_rate: 200
         # Mouse device ID
-#        mouse_device: /dev/input/by-id/usb-Logitech_Gaming_Mouse_G502_0D7534623937-event-mouse
+        mouse_device: /dev/input/by-id/usb-Logitech_Gaming_Mouse_G502_0D7534623937-event-mouse
 #            mouse_device: /dev/input/by-id/usb-Logitech_USB_Optical_Mouse-event-mouse
 #            mouse_device: /dev/input/by-id/usb-PixArt_Dell_MS116_USB_Optical_Mouse-event-mouse
 #            mouse_device: /dev/input/by-id/usb-PixArt_USB_Optical_Mouse-event-mouse
-        mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
+#        mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
         # Max number of samples to store in Redis
         max_samples: 60000
