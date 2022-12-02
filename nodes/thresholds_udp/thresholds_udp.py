@@ -62,7 +62,16 @@ class SpikeGenerator(BRANDNode):
             socket.AF_INET,  # Internet
             socket.SOCK_DGRAM)  # UDP
 
+        if self.UDP_INTERFACE != None:
+            self.sock.setsockopt(
+                socket.SOL_SOCKET,
+                socket.SO_BINDTODEVICE,
+                self.UDP_INTERFACE.encode(),
+            )
+
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # allow broadcast
+
+        logging.info(f'Broadcasting to {self.UDP_IP}:{self.UDP_PORT} on interface \'{self.UDP_INTERFACE}\'')
 
         self.xPC_clock = 0
         self.nsp1_clock = 0

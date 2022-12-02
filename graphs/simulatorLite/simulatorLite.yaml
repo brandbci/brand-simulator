@@ -33,12 +33,12 @@ nodes:
         # Max # of samples to store in Redis
         max_samples: 300000
         # UDP config 
-        udp_ip:             192.168.1.101 # send to brand machine ip address
+        udp_ip:             192.168.30.6 # send to brand machine ip address
         udp_port:           50114
         udp_interface:      null
 
-  - name:             sim2D_prep
-    nickname:         sim2D_prep
+  - name:             sim2D
+    nickname:         sim2D
     module:           ../brand-modules/brand-simulator
     run_priority:     99
     redis_inputs:     [mouse_vel]
@@ -57,21 +57,21 @@ nodes:
         # Max # of samples to store in Redis
         max_samples: 60000
 
-  - name:             udp_get_data
-    nickname:         udp_get_data_sim
-    module:           ../brand-modules/brand-simulator
-    run_priority:     99
-    redis_inputs:     []
-    redis_outputs:    [...]
-    parameters:
-        # Logging level for the process
-        log: INFO
-        # Recv UDP at simulator machine IP address
-        udp_ip: 192.168.1.104 
-        # Port from which to read UDP
-        udp_port: 53018
-        # Max number of samples to store in Redis
-        max_samples: 60000
+  # - name:             udp_get_data
+  #   nickname:         udp_get_data_sim
+  #   module:           ../brand-modules/brand-simulator
+  #   run_priority:     99
+  #   redis_inputs:     []
+  #   redis_outputs:    [...]
+  #   parameters:
+  #       # Logging level for the process
+  #       log: INFO
+  #       # Recv UDP at simulator machine IP address
+  #       udp_ip: 192.168.1.104 
+  #       # Port from which to read UDP
+  #       udp_port: 53018
+  #       # Max number of samples to store in Redis
+  #       max_samples: 60000
 
   - name:             mouseAdapter
     nickname:         mouseAdapterSim

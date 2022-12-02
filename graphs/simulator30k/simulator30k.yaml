@@ -1,7 +1,7 @@
 
 metadata:
     participant_id:            sim
-    graph_name:                simulatorLite
+    graph_name:                simulator30k
     session_description:       2D cursor task neural data simulation, with preparatory activity and xPC formatted output 
 
 # ----------------------------------------------------- 
@@ -29,11 +29,11 @@ nodes:
         # Number of channels associated with the binary file, or for creating a ramp function
         num_channels: 128
         # Timestamp of first sent Cerebus packet
-        initial_timestamp: 1
+        initial_timestamp: 0
         # Log loop time?
-        bool_log_time: 0
+        bool_log_time: 1
         # Send serial output for Arduino clk?
-        bool_serial_clk: 1
+        bool_serial_clk: 0
         # Input data stream name
         input_stream_name: threshold_values1
         # How many samples to buffer
@@ -61,9 +61,9 @@ nodes:
         # Number of channels associated with the binary file, or for creating a ramp function
         num_channels: 128
         # Timestamp of first sent Cerebus packet
-        initial_timestamp: 1
+        initial_timestamp: 0
         # Log loop time?
-        bool_log_time: 0
+        bool_log_time: 1
         # Send serial output for Arduino clk?
         bool_serial_clk: 0
         # Input data stream name
@@ -100,7 +100,7 @@ nodes:
         n_start: 0
         n_end: 128
         # Max samples to store in Redis (1 sample = 1/'sample rate' s)
-        max_samples: 20000
+        max_samples: 2000000
 
   - name:             spike_gen_30k
     nickname:         spike_gen_2
@@ -131,10 +131,10 @@ nodes:
         n_start: 128
         n_end: 256
         # Max samples to store in Redis (1 sample = 1/'sample rate' s)
-        max_samples: 20000
+        max_samples: 2000000
 
-  - name:             sim2D_prep
-    nickname:         sim2D_prep
+  - name:             sim2D
+    nickname:         sim2D
     module:           ../brand-modules/brand-simulator
     run_priority:     99
     redis_inputs:     [mouse_vel]
@@ -149,23 +149,23 @@ nodes:
         # Stream to use as input
         in_stream: mouse_vel
         # Max # of samples to store in Redis
-        max_samples: 6000
+        max_samples: 600000
 
-  - name:             udp_get_data
-    nickname:         udp_get_data_sim
-    module:           ../brand-modules/brand-simulator
-    run_priority:     99
-    redis_inputs:     []
-    redis_outputs:    [...]
-    parameters:
-        # Logging level for the process
-        log: INFO
-        # Recv UDP at simulator machine IP address
-        udp_ip: 192.168.1.104 
-        # Port from which to read UDP
-        udp_port: 53018
-        # Max number of samples to store in Redis
-        max_samples: 6000
+  # - name:             udp_get_data
+  #   nickname:         udp_get_data_sim
+  #   module:           ../brand-modules/brand-simulator
+  #   run_priority:     99
+  #   redis_inputs:     []
+  #   redis_outputs:    [...]
+  #   parameters:
+  #       # Logging level for the process
+  #       log: INFO
+  #       # Recv UDP at simulator machine IP address
+  #       udp_ip: 192.168.1.104 
+  #       # Port from which to read UDP
+  #       udp_port: 53018
+  #       # Max number of samples to store in Redis
+  #       max_samples: 6000
 
   - name:             mouseAdapter
     nickname:         mouseAdapterSim
@@ -187,5 +187,5 @@ nodes:
 #            mouse_device: /dev/input/by-id/usb-PixArt_USB_Optical_Mouse-event-mouse
         mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
         # Max number of samples to store in Redis
-        max_samples: 6000
+        max_samples: 6000000
 
