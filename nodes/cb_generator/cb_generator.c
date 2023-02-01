@@ -31,6 +31,7 @@ typedef struct graph_parameters_t {
     int bool_serial_clk;
     char input_stream_name[30];
     int sample_buffering;
+    int custom_init_deadline;
 } graph_parameters_t;
 
 typedef struct cerebus_packet_t {
@@ -98,7 +99,7 @@ int main(int argc_main, char **argv_main) {
     int broadcast_rate          = graph_parameters.broadcast_rate;
     uint32_t initial_timestamp  = graph_parameters.initial_timestamp;
     int bool_log_time           = graph_parameters.bool_log_time;        
-
+    int custom_init_deadline    = graph_parameters.custom_init_deadline;
 
     printf("[%s] num_channels: %d.\n", NICKNAME, num_channels);
     printf("[%s] sampling_frequency: %d.\n", NICKNAME, sampling_frequency);
@@ -146,12 +147,12 @@ int main(int argc_main, char **argv_main) {
     struct timespec deadline;
 
     // TODO: get initial deadline for synching processes
-    int custom_init_deadline = 0;
+
     if(custom_init_deadline)
     {     	    
         struct timespec custom_deadline = get_graph_load_timespec(redis_context);
         deadline.tv_sec = custom_deadline.tv_sec;
-        deadline.tv_sec += 10;
+        deadline.tv_sec += 0;
         deadline.tv_nsec = custom_deadline.tv_nsec;
     }
     else
@@ -248,7 +249,7 @@ int main(int argc_main, char **argv_main) {
             else
             {
                 samples_received = reply -> integer;
-                // update deadline
+                // update deadline (might not be necessary with recent changes)
                 if(!custom_init_deadline) {
                     clock_gettime(CLOCK_MONOTONIC, &deadline);
                 }
@@ -374,12 +375,12 @@ int main(int argc_main, char **argv_main) {
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL);
 
         // Wait until [sample_buffering] samples have already been buffered before sending packets
-        if (samples_received > sample_buffering)
-        {
+        // if (samples_received > sample_buffering)
+        // {
 
 
             
-        }         
+        // }         
     }
 
     //free(buffer);
@@ -565,6 +566,7 @@ void initialize_parameters(graph_parameters_t *p, redisContext *c)
     p->bool_serial_clk = get_parameter_int(supergraph_json, NICKNAME , "bool_serial_clk");
     strcpy(p->input_stream_name, get_parameter_string(supergraph_json, NICKNAME , "input_stream_name"));
     p->sample_buffering = get_parameter_int(supergraph_json, NICKNAME , "sample_buffering");
+    p->custom_init_deadline = get_parameter_int(supergraph_json, NICKNAME , "custom_init_deadline");
 
     // Free memory, since all relevant information has been transfered to the parameter struct at this point
     //nx_json_free(supergraph_json);	
