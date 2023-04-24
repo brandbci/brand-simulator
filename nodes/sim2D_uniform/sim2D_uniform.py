@@ -16,7 +16,7 @@ class Simulator2D(BRANDNode):
         if 'click_enabled' in self.parameters:
             self.click_enabled = self.parameters['click_enabled']
         else:
-            self.click_enabled = 1
+            self.click_enabled = 0
         self.in_stream = self.parameters['in_stream']
         self.max_samples = self.parameters['max_samples']
         self.mod_amp = self.parameters['mod_amp']
