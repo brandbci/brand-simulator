@@ -95,7 +95,7 @@ class Simulator2D(BRANDNode):
             'prep_subspace': self.x_t[0:2,:].tobytes(),
             'move_subspace': self.x_t[2:4,:].tobytes(),
             'speed_subspace': self.x_t[4,:].tobytes(),
-            'target_state': self.target_state,
+            'target_state': np.int32(self.target_state).tobytes(),
             'moving': self.moving,
             't_t': self.t_t,
             'i': self.i.tobytes(),   
@@ -124,7 +124,7 @@ class Simulator2D(BRANDNode):
             self.p_t_clipped = self.p_t / self.max_p_t_mag
 
             # copy p_t and v_t to state
-            self.x_t[0:2,:] = self.p_t_clipped
+            self.x_t[0:2,:] = self.p_t_clipped * 0
             self.x_t[2:4,:] = self.v_t
             self.x_t[4,:]   = self.v_mag
 
@@ -134,6 +134,9 @@ class Simulator2D(BRANDNode):
                 self.rates = self.rates + self.mouse_click * self.click_tuning 
             self.rates = np.clip(self.rates, 0, None)
 
+            #logging.info(f'prep: {self.x_t[0:2,:]} -- vel: {self.x_t[2:4,:]} -- v_mag: {self.x_t[4,:]}')
+            #logging.info(f'firing rates: {self.rates[0:4]}')
+
             # send samples to Redis
             self.sample['i'] = self.i.tobytes()
             self.sample['i_in'] = self.i_in
@@ -142,7 +145,7 @@ class Simulator2D(BRANDNode):
             self.sample['prep_subspace'] = self.x_t[0:2,:].tobytes()
             self.sample['move_subspace'] = self.x_t[2:4,:].tobytes()
             self.sample['speed_subspace'] = self.x_t[4,:].tobytes()
-            self.sample['target_state'] = self.target_state
+            self.sample['target_state'] = np.int32(self.target_state).tobytes()
             self.sample['moving'] = self.moving
             self.sample['t_t'] = self.t_t
 

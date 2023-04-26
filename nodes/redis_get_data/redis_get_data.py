@@ -24,7 +24,7 @@ class RedisGetData(BRANDNode):
         self.redis_ext_port = self.parameters['redis_ext_port']
         self.input_stream = self.parameters['input_stream']
         self.input_fields = self.parameters['input_fields']
-        self.input_dtypes = self.parameters['input_dtypes']
+        #self.input_dtypes = self.parameters['input_dtypes']
         self.max_samples = self.parameters['max_samples']
 
         try:

@@ -74,7 +74,7 @@ nodes:
         # Send serial output for Arduino clk?
         bool_serial_clk: 0
         # Input data stream name
-        input_stream_name: spike_gen_1
+        input_stream_name: spike_gen_2
         # How many samples to buffer
         sample_buffering: 10
 
@@ -142,7 +142,7 @@ nodes:
     nickname:         sim2D_prep
     module:           ../brand-modules/brand-simulator
     run_priority:     99
-    cpu_affinity:     12
+    cpu_affinity:     12-13
     parameters:
         # logging level for the process
         log: INFO
@@ -159,7 +159,7 @@ nodes:
     nickname:         mouseAdapterSim
     module:           ../brand-modules/brand-simulator
     run_priority:     99
-    cpu_affinity:     13
+    cpu_affinity:     14-15
     parameters:
         # Logging level for the process
         log: INFO
@@ -172,8 +172,8 @@ nodes:
 #            mouse_device: /dev/input/by-id/usb-Logitech_USB_Optical_Mouse-event-mouse
 #            mouse_device: /dev/input/by-id/usb-PixArt_Dell_MS116_USB_Optical_Mouse-event-mouse
 #            mouse_device: /dev/input/by-id/usb-PixArt_USB_Optical_Mouse-event-mouse
-        mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper_8KHz-event-mouse
-        #mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
+        #mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper_8KHz-event-mouse
+        mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
         # Max number of samples to store in Redis
         max_samples: 6000000
 
@@ -181,7 +181,7 @@ nodes:
     nickname:         redis_get_data_targ
     module:           ../brand-modules/brand-simulator
     run_priority:     99
-    cpu_affinity:     14
+    cpu_affinity:     16-17
     parameters:
         # Logging level for the process
         log: INFO
@@ -192,7 +192,7 @@ nodes:
         # Inpute stream and values to copy to simulator Redis server
         input_stream: targetData
         input_fields: ['X', 'Y', 'state']
-        input_dtypes: [float32, float32, int32]
+        #input_dtypes: [float32, float32, int]
         # Max number of samples to store in Redis
         max_samples: 600000
 
@@ -200,7 +200,7 @@ nodes:
     nickname:         redis_get_data_curs
     module:           ../brand-modules/brand-simulator
     run_priority:     99
-    cpu_affinity:     15
+    cpu_affinity:     18-19
     parameters:
         # Logging level for the process
         log: INFO
@@ -211,7 +211,7 @@ nodes:
         # Inpute stream and values to copy to simulator Redis server
         input_stream: cursorData
         input_fields: ['X', 'Y']
-        input_dtypes: [float32, float32]
+        #input_dtypes: [float32, float32]
         # Max number of samples to store in Redis
         max_samples: 600000
 

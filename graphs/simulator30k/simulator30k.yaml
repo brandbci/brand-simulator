@@ -6,13 +6,17 @@ metadata:
 
 # ----------------------------------------------------- 
 
+# graph parameters
+parameters:
+  nsp_channels: &nsp_channels 96
+  total_channels: &total_channels 192
+
 nodes:
   - name:             cb_generator
     nickname:         cb_gen_1
     module:           ../brand-modules/brand-simulator
     run_priority:     99
-    redis_inputs:     [threshold_values]
-    redis_outputs:    [cb_gen_1]
+    cpu_affinity:     4-5
     parameters:
         # logging level for the process
         log: INFO
@@ -27,15 +31,17 @@ nodes:
         # Frequency, in Hz, at which artificial data is sampled
         sampling_frequency: 30000
         # Number of channels associated with the binary file, or for creating a ramp function
-        num_channels: 128
+        num_channels: *nsp_channels
         # Timestamp of first sent Cerebus packet
         initial_timestamp: 0
         # Log loop time?
         bool_log_time: 1
+        # Use custom start timestamp from graph
+        custom_init_deadline: 1
         # Send serial output for Arduino clk?
         bool_serial_clk: 0
         # Input data stream name
-        input_stream_name: threshold_values1
+        input_stream_name: spike_gen_1
         # How many samples to buffer
         sample_buffering: 10
 
@@ -43,8 +49,7 @@ nodes:
     nickname:         cb_gen_2
     module:           ../brand-modules/brand-simulator
     run_priority:     99
-    redis_inputs:     [threshold_values]
-    redis_outputs:    [cb_gen_2]
+    cpu_affinity:     6-7
     parameters:
         # logging level for the process
         log: INFO
@@ -59,15 +64,17 @@ nodes:
         # Frequency, in Hz, at which artificial data is sampled
         sampling_frequency: 30000
         # Number of channels associated with the binary file, or for creating a ramp function
-        num_channels: 128
+        num_channels: *nsp_channels
         # Timestamp of first sent Cerebus packet
         initial_timestamp: 0
         # Log loop time?
         bool_log_time: 1
+        # Use custom start timestamp from graph
+        custom_init_deadline: 1
         # Send serial output for Arduino clk?
         bool_serial_clk: 0
         # Input data stream name
-        input_stream_name: threshold_values2
+        input_stream_name: spike_gen_2
         # How many samples to buffer
         sample_buffering: 10
 
@@ -75,8 +82,7 @@ nodes:
     nickname:         spike_gen_1
     module:           ../brand-modules/brand-simulator
     run_priority:     99
-    redis_inputs:     [firing_rates]
-    redis_outputs:    [threshold_values1]
+    cpu_affinity:     8-9
     parameters:
         # logging level for the process
         log: INFO
@@ -93,12 +99,12 @@ nodes:
         # Input data stream name
         input_stream: firing_rates
         # Output data stream name
-        output_stream: threshold_values1
+        output_stream: spike_gen_1
         # Number of total simulated neurons in firing rate input
-        n_neurons: 256
+        n_neurons: *total_channels
         # Range of channels to generate data for
         n_start: 0
-        n_end: 128
+        n_end: *nsp_channels
         # Max samples to store in Redis (1 sample = 1/'sample rate' s)
         max_samples: 2000000
 
@@ -106,8 +112,7 @@ nodes:
     nickname:         spike_gen_2
     module:           ../brand-modules/brand-simulator
     run_priority:     99
-    redis_inputs:     [firing_rates]
-    redis_outputs:    [threshold_values2]
+    cpu_affinity:     10-11
     parameters:
         # logging level for the process
         log: INFO
@@ -124,12 +129,12 @@ nodes:
         # Input data stream name
         input_stream: firing_rates
         # Output data stream name
-        output_stream: threshold_values2
+        output_stream: spike_gen_2
         # Number of total simulated neurons in firing rate input
-        n_neurons: 256
+        n_neurons: *total_channels
         # Range of channels to generate data for
-        n_start: 128
-        n_end: 256
+        n_start: *nsp_channels
+        n_end: *total_channels
         # Max samples to store in Redis (1 sample = 1/'sample rate' s)
         max_samples: 2000000
 
@@ -137,13 +142,12 @@ nodes:
     nickname:         sim2D
     module:           ../brand-modules/brand-simulator
     run_priority:     99
-    redis_inputs:     [mouse_vel]
-    redis_outputs:    [firing_rates]
+    cpu_affinity:     12-13
     parameters:
         # logging level for the process
         log: INFO
         # Number of neurons to simulate
-        n_neurons: 256
+        n_neurons: *total_channels
         # Max. mouse velocity for normalization
         max_v: 25.0
         # Stream to use as input
@@ -151,28 +155,11 @@ nodes:
         # Max # of samples to store in Redis
         max_samples: 600000
 
-  # - name:             udp_get_data
-  #   nickname:         udp_get_data_sim
-  #   module:           ../brand-modules/brand-simulator
-  #   run_priority:     99
-  #   redis_inputs:     []
-  #   redis_outputs:    [...]
-  #   parameters:
-  #       # Logging level for the process
-  #       log: INFO
-  #       # Recv UDP at simulator machine IP address
-  #       udp_ip: 192.168.1.104 
-  #       # Port from which to read UDP
-  #       udp_port: 53018
-  #       # Max number of samples to store in Redis
-  #       max_samples: 6000
-
   - name:             mouseAdapter
     nickname:         mouseAdapterSim
     module:           ../brand-modules/brand-simulator
     run_priority:     99
-    redis_inputs:     []
-    redis_outputs:    [mouse_vel]
+    cpu_affinity:     14-15
     parameters:
         # Logging level for the process
         log: INFO
@@ -185,6 +172,7 @@ nodes:
 #            mouse_device: /dev/input/by-id/usb-Logitech_USB_Optical_Mouse-event-mouse
 #            mouse_device: /dev/input/by-id/usb-PixArt_Dell_MS116_USB_Optical_Mouse-event-mouse
 #            mouse_device: /dev/input/by-id/usb-PixArt_USB_Optical_Mouse-event-mouse
+        #mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper_8KHz-event-mouse
         mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
         # Max number of samples to store in Redis
         max_samples: 6000000
