@@ -1,7 +1,6 @@
-
+graph_name: sim
 metadata:
     participant_id:            sim
-    graph_name:                simulator30k
     session_description:       2D cursor task neural data simulation, with preparatory activity and xPC formatted output 
 
 # ----------------------------------------------------- 
@@ -11,9 +10,11 @@ parameters:
   nsp_channels: &nsp_channels 96
   total_channels: &total_channels 192
 
+# node-specific parameters
 nodes:
   - name:             cb_generator
     nickname:         cb_gen_1
+    machine:          sim
     module:           ../brand-modules/brand-simulator
     run_priority:     99
     cpu_affinity:     4-5
@@ -47,6 +48,7 @@ nodes:
 
   - name:             cb_generator
     nickname:         cb_gen_2
+    machine:          sim
     module:           ../brand-modules/brand-simulator
     run_priority:     99
     cpu_affinity:     6-7
@@ -80,6 +82,7 @@ nodes:
 
   - name:             spike_gen_30k
     nickname:         spike_gen_1
+    machine:          sim
     module:           ../brand-modules/brand-simulator
     run_priority:     99
     cpu_affinity:     8-9
@@ -106,10 +109,11 @@ nodes:
         n_start: 0
         n_end: *nsp_channels
         # Max samples to store in Redis (1 sample = 1/'sample rate' s)
-        max_samples: 2000000
+        max_samples: 3600000 # 60 minutes (at 1000 Hz)
 
   - name:             spike_gen_30k
     nickname:         spike_gen_2
+    machine:          sim
     module:           ../brand-modules/brand-simulator
     run_priority:     99
     cpu_affinity:     10-11
@@ -136,10 +140,11 @@ nodes:
         n_start: *nsp_channels
         n_end: *total_channels
         # Max samples to store in Redis (1 sample = 1/'sample rate' s)
-        max_samples: 2000000
+        max_samples: 3600000 # 60 minutes (at 1000 Hz)
 
   - name:             sim2D_prep
     nickname:         sim2D_prep
+    machine:          sim
     module:           ../brand-modules/brand-simulator
     run_priority:     99
     cpu_affinity:     12-13
@@ -153,10 +158,11 @@ nodes:
         # Stream to use as input
         in_stream: mouse_vel
         # Max # of samples to store in Redis
-        max_samples: 600000
+        max_samples: 720000 # 60 minutes (at 200 Hz)
 
   - name:             mouseAdapter
     nickname:         mouseAdapterSim
+    machine:          sim
     module:           ../brand-modules/brand-simulator
     run_priority:     99
     cpu_affinity:     14-15
@@ -175,10 +181,11 @@ nodes:
         #mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper_8KHz-event-mouse
         mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
         # Max number of samples to store in Redis
-        max_samples: 6000000
+        max_samples: 720000 # 60 minutes (at 200 Hz)
 
   - name:             redis_get_data
     nickname:         redis_get_data_targ
+    machine:          sim
     module:           ../brand-modules/brand-simulator
     run_priority:     99
     cpu_affinity:     16-17
@@ -194,10 +201,11 @@ nodes:
         input_fields: ['X', 'Y', 'state']
         #input_dtypes: [float32, float32, int]
         # Max number of samples to store in Redis
-        max_samples: 600000
+        max_samples: 360000 # 60 minutes (at 100 Hz)
 
   - name:             redis_get_data
     nickname:         redis_get_data_curs
+    machine:          sim
     module:           ../brand-modules/brand-simulator
     run_priority:     99
     cpu_affinity:     18-19
@@ -213,7 +221,7 @@ nodes:
         input_fields: ['X', 'Y']
         #input_dtypes: [float32, float32]
         # Max number of samples to store in Redis
-        max_samples: 600000
+        max_samples: 360000 # 60 minutes (at 100 Hz)
 
 
 
