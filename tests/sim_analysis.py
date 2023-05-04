@@ -16,6 +16,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from brand.timing import timespecs_to_timestamps, timevals_to_timestamps
 from struct import unpack
+import pickle
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(level='DEBUG')
@@ -157,11 +159,17 @@ cb_2_df = pd.DataFrame(decoded_streams['cb_gen_2'])
 # Plot timing of output packets
 
 plt.figure()
-plt.plot(cb_1_df['ts'].diff())
+plt.plot(cb_1_df['ts'].diff()*1e3)
+plt.xlabel('Sample #')
+plt.ylabel('ISI (ms)')
+plt.title('Cerebus generator 1')
 plt.show()
 
 plt.figure()
-plt.plot(cb_2_df['ts'].diff())
+plt.plot(cb_2_df['ts'].diff()*1e3)
+plt.xlabel('Sample #')
+plt.ylabel('ISI (ms)')
+plt.title('Cerebus generator 2')
 plt.show()
 
 # %%
@@ -169,3 +177,21 @@ plt.show()
 
 r.close()
 
+# %%
+# Save pickle files
+
+out_parent_dir = './sim_outputs'
+
+out_folder = datetime.now().strftime(r'%y%m%dT%H%M')
+out_dir = os.path.join(out_parent_dir, out_folder)
+os.makedirs(out_dir, exist_ok=True)
+
+graph_df1_filt = graph_df1.loc[:,graph_df1.columns.str.startswith("ts_")]
+graph_df2_filt = graph_df2.loc[:,graph_df2.columns.str.startswith("ts_")]
+
+graph_df1_filt.to_pickle(os.path.join(out_dir,'graph_1.pkl'))
+graph_df2_filt.to_pickle(os.path.join(out_dir,'graph_2.pkl'))
+cb_1_df.to_pickle(os.path.join(out_dir,'cb_gen_1.pkl'))
+cb_2_df.to_pickle(os.path.join(out_dir,'cb_gen_2.pkl'))
+
+# %%
