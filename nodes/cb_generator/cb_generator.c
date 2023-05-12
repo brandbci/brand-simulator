@@ -31,6 +31,7 @@ typedef struct graph_parameters_t {
     int bool_serial_clk;
     char input_stream_name[30];
     int sample_buffering;
+    int custom_init_deadline;
 } graph_parameters_t;
 
 typedef struct cerebus_packet_t {
@@ -98,7 +99,7 @@ int main(int argc_main, char **argv_main) {
     int broadcast_rate          = graph_parameters.broadcast_rate;
     uint32_t initial_timestamp  = graph_parameters.initial_timestamp;
     int bool_log_time           = graph_parameters.bool_log_time;        
-
+    int custom_init_deadline    = graph_parameters.custom_init_deadline;
 
     printf("[%s] num_channels: %d.\n", NICKNAME, num_channels);
     printf("[%s] sampling_frequency: %d.\n", NICKNAME, sampling_frequency);
@@ -146,12 +147,12 @@ int main(int argc_main, char **argv_main) {
     struct timespec deadline;
 
     // TODO: get initial deadline for synching processes
-    int custom_init_deadline = 1;
+
     if(custom_init_deadline)
     {     	    
         struct timespec custom_deadline = get_graph_load_timespec(redis_context);
         deadline.tv_sec = custom_deadline.tv_sec;
-        deadline.tv_sec += 10;
+        deadline.tv_sec += 0;
         deadline.tv_nsec = custom_deadline.tv_nsec;
     }
     else
@@ -166,7 +167,6 @@ int main(int argc_main, char **argv_main) {
 
     char last_redis_id [30];
     strcpy(last_redis_id, "0-0");
-    //strcpy(last_redis_id, "$");
     char redis_string[256] = {0};
 
     uint32_t buffer_write_ind = 0;
@@ -249,6 +249,10 @@ int main(int argc_main, char **argv_main) {
             else
             {
                 samples_received = reply -> integer;
+                // update deadline (might not be necessary with recent changes)
+                if(!custom_init_deadline) {
+                    clock_gettime(CLOCK_MONOTONIC, &deadline);
+                }
             }
         }
         else
@@ -275,7 +279,87 @@ int main(int argc_main, char **argv_main) {
                 // Save timestamp/id of last redis sample
                 strcpy(last_redis_id, reply->element[0]->element[1]->element[0]->element[0]->str);  
                 // Copy redis data  
-                redis_data = reply->element[0]->element[1]->element[0]->element[1]->element[13]->str;                          
+                redis_data = reply->element[0]->element[1]->element[0]->element[1]->element[13]->str;
+
+                int num_cb_data_packets = 0;
+                int udp_packet_size = 0;
+                uint32_t buffer_ind = 0;            
+
+                while(num_cb_data_packets < cerebus_packets_per_SIGALRM) {
+
+                    // update Cerebus packet timestamp
+                    cb_packet.time = ts;
+                    ts++;
+                    // The cerebus packet definitions use dlen to determine the number of 4 bytes 
+                    int cb_packet_size = sizeof(cerebus_packet_t) + (cb_packet.dlen * 4);
+                    
+                    // Write header bytes
+                    write(fd, &cb_packet, sizeof(cerebus_packet_t));
+                    udp_packet_size += sizeof(cerebus_packet_t);
+                    // Write data bytes
+                    write(fd, &redis_data[buffer_ind], num_channels*2);
+                    udp_packet_size += num_channels*2;
+                    buffer_ind      += num_channels*2;
+
+                    /*
+                    // Prevent index out of bounds problems
+                    if (buffer_ind >= buffer_size) {
+                        buffer_ind = 0;
+                    }
+                    */
+
+                    // Having read the packet, we then ask if writing the next packet
+                    // will take us over. If yes, then uncork/cork again.
+                    int next_cb_packet_size = sizeof(cerebus_packet_t) + (cb_packet.dlen*4);
+
+                    if (udp_packet_size + next_cb_packet_size >= 1472) {
+                        setsockopt(fd, IPPROTO_UDP, UDP_CORK, &zero, sizeof(zero));
+                        setsockopt(fd, IPPROTO_UDP, UDP_CORK, &one, sizeof(one));
+                        udp_packet_size = 0;
+                    }
+
+                    /*
+                    if (cb_packet.type == 5) {
+                        num_cb_data_packets++;
+                    }
+                    */
+                    num_cb_data_packets++;
+
+                }
+                
+                // Now that we've sent all of the packets we're going to send, uncork and then cork
+                setsockopt(fd, IPPROTO_UDP, UDP_CORK, &zero, sizeof(zero));
+                setsockopt(fd, IPPROTO_UDP, UDP_CORK, &one, sizeof(one));
+
+                loop_count++;
+
+                //freeReplyObject(reply);
+
+                // Log current time to redis
+                if (bool_log_time)
+                {
+                    freeReplyObject(reply); 
+
+                    // Get current time
+                    gettimeofday(&current_time, NULL);
+                    clock_gettime(CLOCK_MONOTONIC, &current_timespec);
+                    memcpy(&argv[ind_timestamps+1][0],
+                        &current_timespec, sizeof(struct timespec));
+                    
+                    // Update argvlen[timestamps+1]
+                    argvlen[ind_timestamps+1] = sizeof(current_timespec);
+
+                    // Send to redis
+                    reply = redisCommandArgv(redis_context, argc,
+                        (const char**) argv, argvlen);
+                } 
+
+                if (bool_serial_clk)
+                {
+                    // Send serial message to Arduino (or other peripheral peripherial) to trigger clock pulse
+                    rc_serial = serialport_writebyte(fd_serial, (uint8_t)2);
+                    if(rc_serial==-1) error("error writing",0);
+                }                          
             }
         }
 
@@ -291,88 +375,12 @@ int main(int argc_main, char **argv_main) {
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL);
 
         // Wait until [sample_buffering] samples have already been buffered before sending packets
-        if (samples_received > sample_buffering)
-        {
-            // Log current time to redis
-            if (bool_log_time)
-            {
-                freeReplyObject(reply); 
+        // if (samples_received > sample_buffering)
+        // {
 
-                // Get current time
-                gettimeofday(&current_time, NULL);
-                clock_gettime(CLOCK_MONOTONIC, &current_timespec);
-			    memcpy(&argv[ind_timestamps+1][0],
-				    &current_timespec, sizeof(struct timespec));
-                
-                // Update argvlen[timestamps+1]
-			    argvlen[ind_timestamps+1] = sizeof(current_timespec);
 
-                // Send to redis
-			    reply = redisCommandArgv(redis_context, argc,
-				    (const char**) argv, argvlen);
-            }
-
-            int num_cb_data_packets = 0;
-            int udp_packet_size = 0;
-            uint32_t buffer_ind = 0;            
-
-            while(num_cb_data_packets < cerebus_packets_per_SIGALRM) {
-
-                // update Cerebus packet timestamp
-                cb_packet.time = ts;
-                ts++;
-                // The cerebus packet definitions use dlen to determine the number of 4 bytes 
-                int cb_packet_size = sizeof(cerebus_packet_t) + (cb_packet.dlen * 4);
-                
-                // Write header bytes
-                write(fd, &cb_packet, sizeof(cerebus_packet_t));
-                udp_packet_size += sizeof(cerebus_packet_t);
-                // Write data bytes
-                write(fd, &redis_data[buffer_ind], num_channels*2);
-                udp_packet_size += num_channels*2;
-                buffer_ind      += num_channels*2;
-
-                /*
-                // Prevent index out of bounds problems
-                if (buffer_ind >= buffer_size) {
-                    buffer_ind = 0;
-                }
-                */
-
-                // Having read the packet, we then ask if writing the next packet
-                // will take us over. If yes, then uncork/cork again.
-                int next_cb_packet_size = sizeof(cerebus_packet_t) + (cb_packet.dlen*4);
-
-                if (udp_packet_size + next_cb_packet_size >= 1472) {
-                    setsockopt(fd, IPPROTO_UDP, UDP_CORK, &zero, sizeof(zero));
-                    setsockopt(fd, IPPROTO_UDP, UDP_CORK, &one, sizeof(one));
-                    udp_packet_size = 0;
-                }
-
-                /*
-                if (cb_packet.type == 5) {
-                    num_cb_data_packets++;
-                }
-                */
-                num_cb_data_packets++;
-
-            }
             
-            // Now that we've sent all of the packets we're going to send, uncork and then cork
-            setsockopt(fd, IPPROTO_UDP, UDP_CORK, &zero, sizeof(zero));
-            setsockopt(fd, IPPROTO_UDP, UDP_CORK, &one, sizeof(one));
-
-            loop_count++;
-
-            //freeReplyObject(reply); 
-
-            if (bool_serial_clk)
-            {
-                // Send serial message to Arduino (or other peripheral peripherial) to trigger clock pulse
-                rc_serial = serialport_writebyte(fd_serial, (uint8_t)2);
-                if(rc_serial==-1) error("error writing",0);
-            }
-        }         
+        // }         
     }
 
     //free(buffer);
@@ -558,6 +566,7 @@ void initialize_parameters(graph_parameters_t *p, redisContext *c)
     p->bool_serial_clk = get_parameter_int(supergraph_json, NICKNAME , "bool_serial_clk");
     strcpy(p->input_stream_name, get_parameter_string(supergraph_json, NICKNAME , "input_stream_name"));
     p->sample_buffering = get_parameter_int(supergraph_json, NICKNAME , "sample_buffering");
+    p->custom_init_deadline = get_parameter_int(supergraph_json, NICKNAME , "custom_init_deadline");
 
     // Free memory, since all relevant information has been transfered to the parameter struct at this point
     //nx_json_free(supergraph_json);	
