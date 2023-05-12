@@ -124,7 +124,7 @@ class Simulator2D(BRANDNode):
             self.p_t_clipped = self.p_t / self.max_p_t_mag
 
             # copy p_t and v_t to state
-            self.x_t[0:2,:] = self.p_t_clipped * 0
+            self.x_t[0:2,:] = self.p_t_clipped
             self.x_t[2:4,:] = self.v_t
             self.x_t[4,:]   = self.v_mag
 
