@@ -26,8 +26,8 @@ logger.setLevel(logging.DEBUG)
 # %% 
 # Connect to Redis
 
-REDIS_IP = '192.168.30.8'
-REDIS_PORT = 18000
+REDIS_IP = '127.0.0.1'
+REDIS_PORT = 10000
 
 r = redis.Redis(host=REDIS_IP, port=REDIS_PORT)
 
@@ -194,4 +194,21 @@ graph_df2_filt.to_pickle(os.path.join(out_dir,'graph_2.pkl'))
 cb_1_df.to_pickle(os.path.join(out_dir,'cb_gen_1.pkl'))
 cb_2_df.to_pickle(os.path.join(out_dir,'cb_gen_2.pkl'))
 
+# %%
+
+# concatenate all prep_space
+prep_subspace = np.vstack(graph_df1['prep_subspace'].tolist())
+
+plt.figure()
+plt.plot(prep_subspace)
+
+move_subspace = np.vstack(graph_df1['move_subspace'].tolist())
+
+plt.figure()
+plt.plot(move_subspace)
+
+speed_subspace = np.vstack(graph_df1['speed_subspace'].tolist())
+
+plt.figure()
+plt.plot(speed_subspace)
 # %%
