@@ -109,7 +109,7 @@ nodes:
         n_start: 0
         n_end: *nsp_channels
         # Max samples to store in Redis (1 sample = 1/'sample rate' s)
-        max_samples: 3600000 # 60 minutes (at 1000 Hz)
+        max_samples: 300000 # 60 minutes (at 1000 Hz)
 
   - name:             spike_gen_30k
     nickname:         spike_gen_2
@@ -140,7 +140,7 @@ nodes:
         n_start: *nsp_channels
         n_end: *total_channels
         # Max samples to store in Redis (1 sample = 1/'sample rate' s)
-        max_samples: 3600000 # 60 minutes (at 1000 Hz)
+        max_samples: 300000 # 60 minutes (at 1000 Hz)
 
   - name:             sim2D_prep
     nickname:         sim2D_prep
@@ -158,7 +158,7 @@ nodes:
         # Stream to use as input
         in_stream: mouse_vel
         # Max # of samples to store in Redis
-        max_samples: 720000 # 60 minutes (at 200 Hz)
+        max_samples: 60000 # 60 minutes (at 200 Hz)
 
   - name:             mouseAdapter
     nickname:         mouseAdapterSim
@@ -181,7 +181,7 @@ nodes:
         #mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper_8KHz-event-mouse
         mouse_device: /dev/input/by-id/usb-Razer_Razer_Viper-event-mouse
         # Max number of samples to store in Redis
-        max_samples: 720000 # 60 minutes (at 200 Hz)
+        max_samples: 60000 # 60 minutes (at 200 Hz)
 
   - name:             redis_get_data
     nickname:         redis_get_data_targ
@@ -201,7 +201,7 @@ nodes:
         input_fields: ['X', 'Y', 'state']
         #input_dtypes: [float32, float32, int]
         # Max number of samples to store in Redis
-        max_samples: 360000 # 60 minutes (at 100 Hz)
+        max_samples: 30000 # 5 minutes (at 100 Hz)
 
   - name:             redis_get_data
     nickname:         redis_get_data_curs
@@ -221,7 +221,7 @@ nodes:
         input_fields: ['X', 'Y']
         #input_dtypes: [float32, float32]
         # Max number of samples to store in Redis
-        max_samples: 360000 # 60 minutes (at 100 Hz)
+        max_samples: 30000 # 5 minutes (at 100 Hz)
 
 
 
