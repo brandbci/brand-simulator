@@ -1,13 +1,17 @@
 
 import gc
+import json
 import logging
 import os
 import signal
+import socket
 import sys
 import time
-import socket
+
 import numpy as np
+
 from brand import BRANDNode
+
 
 class SpikeGenerator(BRANDNode):
     def __init__(self):
@@ -102,6 +106,7 @@ class SpikeGenerator(BRANDNode):
 
         self.last_time = time.monotonic()
 
+        sync_dict = {'count': 0}
         # send samples to Redis
         while True:
             self.sample['ts_start'] = time.monotonic()
@@ -132,6 +137,8 @@ class SpikeGenerator(BRANDNode):
                     time.sleep(1e-6)
 
                 self.sample['ts'] = time.monotonic()
+                sync_dict['count'] += 1
+                self.sample['sync'] = json.dumps(sync_dict)
                 self.r.xadd(self.output_stream, self.sample, maxlen=self.max_samples, approximate=True)
                 
                 self.sample['ts_end'] = time.monotonic()
